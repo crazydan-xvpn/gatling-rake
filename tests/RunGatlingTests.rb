@@ -29,7 +29,7 @@ class RunGatlingTests < Test::Unit::TestCase
 		mockShell = self
 		Gatling.new(mockShell).start(load_test_root: load_test_root)
 		gatling_command = commands[1]
-		gatling_command.should match(/-bf #{load_test_root}\/request-bodies/)
+		gatling_command.should match(/ -bf #{load_test_root}\/request-bodies/)
 	end
 
 	def test_that_gatling_is_run_with_simulations_folder_specified
@@ -38,7 +38,7 @@ class RunGatlingTests < Test::Unit::TestCase
 		mockShell = self
 		Gatling.new(mockShell).start(load_test_root: load_test_root)
 		gatling_command = commands[1]
-		gatling_command.should match(/-sf #{load_test_root}\/simulations/)
+		gatling_command.should match(/ -sf #{load_test_root}\/simulations/)
 	end
 
 	def test_that_gatling_is_run_with_data_folder_specified
@@ -47,7 +47,16 @@ class RunGatlingTests < Test::Unit::TestCase
 		mockShell = self
 		Gatling.new(mockShell).start(load_test_root: load_test_root)
 		gatling_command = commands[1]
-		gatling_command.should match(/-df #{load_test_root}\/data/)
+		gatling_command.should match(/ -df #{load_test_root}\/data/)
+	end
+
+	def test_that_gatling_is_run_with_results_folder_specified
+		@commands = []
+		result_directory = "Random/#{rand(6)}"
+		mockShell = self
+		Gatling.new(mockShell).start(result_directory: result_directory)
+		gatling_command = commands[1]
+		gatling_command.should match(/ -rf #{result_directory}/)
 	end
 
 # %GATLING_DIR%\\gatling.bat -bf load-tests\request-bodies -sf load-tests\simulations -df load-tests\data -rf %teamcity.build.checkoutDir%\load-testing-results -s FlavaIt.FlavaItSimulation -sd "Flava-It load tests"
@@ -65,10 +74,7 @@ class Gatling
 
 	def start(parameters)
 		@remove_directory.execute(parameters[:result_directory])
-		@run_gatling.execute(
-			gatling_file_location: parameters[:gatling_file_location],
-			load_test_root: parameters[:load_test_root]
-		)
+		@run_gatling.execute(parameters)
 	end
 end
 
@@ -103,9 +109,10 @@ class GatlingParameterBuilder
 		gatling_parameters = {
 			'-bf' => "#{load_test_root}/request-bodies",
 			'-sf' => "#{load_test_root}/simulations",
-			'-df' => "#{load_test_root}/data"
+			'-df' => "#{load_test_root}/data",
+			'-rf' => parameters[:result_directory]
 		}
 		gatling_parameter_string = gatling_parameters.map{ 
-			| key , value |	"#{key} #{value}"}.join
+			| key , value |	"#{key} #{value}"}.join(' ')
 	end
 end
