@@ -59,6 +59,15 @@ class RunGatlingTests < Test::Unit::TestCase
 		gatling_command.should match(/ -rf #{result_directory}/)
 	end
 
+	def test_that_gatling_is_run_with_against_the_correct_simulation
+		@commands = []
+		simulation = "ARandom.#{rand(6)}.simulation"
+		mockShell = self
+		Gatling.new(mockShell).start(simulation: simulation)
+		gatling_command = commands[1]
+		gatling_command.should match(/ -s #{simulation}/)
+	end
+
 # %GATLING_DIR%\\gatling.bat -bf load-tests\request-bodies -sf load-tests\simulations -df load-tests\data -rf %teamcity.build.checkoutDir%\load-testing-results -s FlavaIt.FlavaItSimulation -sd "Flava-It load tests"
 	def execute(command)
 		@commands.push(command)
@@ -110,7 +119,8 @@ class GatlingParameterBuilder
 			'-bf' => "#{load_test_root}/request-bodies",
 			'-sf' => "#{load_test_root}/simulations",
 			'-df' => "#{load_test_root}/data",
-			'-rf' => parameters[:result_directory]
+			'-rf' => parameters[:result_directory],
+			'-s' => parameters[:simulation]
 		}
 		gatling_parameter_string = gatling_parameters.map{ 
 			| key , value |	"#{key} #{value}"}.join(' ')
