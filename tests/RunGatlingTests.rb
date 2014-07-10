@@ -6,12 +6,12 @@ class RunGatlingTests < Test::Unit::TestCase
 	attr_reader :commands
 
 	public 
-	def test_that_previous_result_directory_is_removed
+	def test_that_previous_results_directory_is_removed
 		@commands = []
-		result_directory = "Random/#{rand(6)}"
+		results_directory = "Random/#{rand(6)}"
 		mockShell = self
-		Gatling.new(mockShell).start(result_directory: result_directory)
-		commands[0].should eql("rmdir /s /q #{result_directory}")
+		Gatling.new(mockShell).start(results_directory: results_directory)
+		commands[0].should eql("rmdir /s /q #{results_directory}")
 	end
 
 	def test_that_gatling_is_run_from_correct_location
@@ -52,11 +52,11 @@ class RunGatlingTests < Test::Unit::TestCase
 
 	def test_that_gatling_is_run_with_results_folder_specified
 		@commands = []
-		result_directory = "Random/#{rand(6)}"
+		results_directory = "Random/#{rand(6)}"
 		mockShell = self
-		Gatling.new(mockShell).start(result_directory: result_directory)
+		Gatling.new(mockShell).start(results_directory: results_directory)
 		gatling_command = commands[1]
-		gatling_command.should match(/ -rf #{result_directory}/)
+		gatling_command.should match(/ -rf #{results_directory}/)
 	end
 
 	def test_that_gatling_is_run_with_against_the_correct_simulation
@@ -68,7 +68,15 @@ class RunGatlingTests < Test::Unit::TestCase
 		gatling_command.should match(/ -s #{simulation}/)
 	end
 
-# %GATLING_DIR%\\gatling.bat -bf load-tests\request-bodies -sf load-tests\simulations -df load-tests\data -rf %teamcity.build.checkoutDir%\load-testing-results -s FlavaIt.FlavaItSimulation -sd "Flava-It load tests"
+	def test_that_gatling_is_run_with_with_simulation_description
+		@commands = []
+		simulation_description = "#{rand(6)}simulation"
+		mockShell = self
+		Gatling.new(mockShell).start(simulation_description: simulation_description)
+		gatling_command = commands[1]
+		gatling_command.should match(/ -sd "#{simulation_description}"/)
+	end
+
 	def execute(command)
 		@commands.push(command)
 	end
@@ -82,7 +90,7 @@ class Gatling
 	end
 
 	def start(parameters)
-		@remove_directory.execute(parameters[:result_directory])
+		@remove_directory.execute(parameters[:results_directory])
 		@run_gatling.execute(parameters)
 	end
 end
@@ -119,8 +127,9 @@ class GatlingParameterBuilder
 			'-bf' => "#{load_test_root}/request-bodies",
 			'-sf' => "#{load_test_root}/simulations",
 			'-df' => "#{load_test_root}/data",
-			'-rf' => parameters[:result_directory],
-			'-s' => parameters[:simulation]
+			'-rf' => parameters[:results_directory],
+			'-s' => parameters[:simulation],
+			'-sd' => "\"#{parameters[:simulation_description]}\""
 		}
 		gatling_parameter_string = gatling_parameters.map{ 
 			| key , value |	"#{key} #{value}"}.join(' ')
