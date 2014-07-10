@@ -67,17 +67,25 @@ class RemoveDirectoryCommand < ShellCommand
 end
 
 class GatlingCommand < ShellCommand
-	def execute(parameters)
-		load_test_root = parameters[:load_test_root]
-		gatling_parameters = 
-			{
-				'-bf' => "#{load_test_root}/request-bodies"
-			}
-			.map{| key , value | "#{key} #{value}"}
-			.join
+	def initialize(shell)
+		super
+		@parameter_builder = GatlingParameterBuilder.new
+	end
 
-		
+	def execute(parameters)
+		gatling_parameters = @parameter_builder.buildFrom(parameters)		
 		gatling_file_location = parameters[:gatling_file_location]
 		@shell.execute("#{gatling_file_location} #{gatling_parameters}")
+	end
+end
+
+class GatlingParameterBuilder
+	def buildFrom(parameters)
+		load_test_root = parameters[:load_test_root]
+		gatling_parameters = {
+			'-bf' => "#{load_test_root}/request-bodies"
+		}
+		gatling_parameter_string = gatling_parameters.map{ 
+			| key , value |	"#{key} #{value}"}.join
 	end
 end
