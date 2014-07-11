@@ -1,7 +1,9 @@
 require 'test/unit'
 require 'rspec-expectations'
+require_relative '../lib/src/Gatling'
 
 class RunGatlingTests < Test::Unit::TestCase	
+	include RakeGatling
 	private 
 	attr_reader :commands
 
@@ -82,56 +84,3 @@ class RunGatlingTests < Test::Unit::TestCase
 	end
 end
 
-class Gatling 
-	def initialize(shell)
-		@shell = shell
-		@remove_directory = RemoveDirectoryCommand.new(shell)
-		@run_gatling = GatlingCommand.new(shell)
-	end
-
-	def start(parameters)
-		@remove_directory.execute(parameters[:results_directory])
-		@run_gatling.execute(parameters)
-	end
-end
-
-class ShellCommand
-	def initialize(shell)
-		@shell = shell
-	end
-end
-
-class RemoveDirectoryCommand < ShellCommand
-	def execute(directory_name)
-		@shell.execute("rmdir /s /q #{directory_name}")
-	end
-end
-
-class GatlingCommand < ShellCommand
-	def initialize(shell)
-		super
-		@parameter_builder = GatlingParameterBuilder.new
-	end
-
-	def execute(parameters)
-		gatling_parameters = @parameter_builder.buildFrom(parameters)		
-		gatling_file_location = parameters[:gatling_file_location]
-		@shell.execute("#{gatling_file_location} #{gatling_parameters}")
-	end
-end
-
-class GatlingParameterBuilder
-	def buildFrom(parameters)
-		load_test_root = parameters[:load_test_root]
-		gatling_parameters = {
-			'-bf' => "#{load_test_root}/request-bodies",
-			'-sf' => "#{load_test_root}/simulations",
-			'-df' => "#{load_test_root}/data",
-			'-rf' => parameters[:results_directory],
-			'-s' => parameters[:simulation],
-			'-sd' => "\"#{parameters[:simulation_description]}\""
-		}
-		gatling_parameter_string = gatling_parameters.map{ 
-			| key , value |	"#{key} #{value}"}.join(' ')
-	end
-end
