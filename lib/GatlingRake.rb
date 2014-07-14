@@ -1,5 +1,6 @@
+require_relative './src/Gatling'
+require_relative './src/Shell'
 include Rake::DSL
-include RakeGatling
 
 def gatling(*args, &block)
 	gatling_wrapper = GatlingWrapper.new(&block)
@@ -8,7 +9,7 @@ def gatling(*args, &block)
 end	
 
 class GatlingWrapper
-	include IO 
+	include RakeGatling
 
 	def initialize(&block)
 		@block = block;

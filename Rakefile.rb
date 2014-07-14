@@ -1,3 +1,5 @@
+require_relative './lib/GatlingRake'
+
 task :default => [:dependencies, :test, :commit]
 
 desc 'Load dependencies with bundler'
@@ -13,6 +15,17 @@ task :test do
 		puts ">> Running tests on: #{test_file_name}"
 		sh "bundle exec ruby #{test_file_name}"
 	end
+end
+
+puts Dir.pwd
+
+desc 'Integration test.. requires gatling installed in ../../gatling'
+gatling :integration do | config |
+	config.results_directory = "#{Dir.pwd}/results"
+	config.gatling_file_location = '../../gatling/bin/gatling.sh'
+	config.load_test_root = './test-load-tests'
+	config.simulation = 'Test.GetGoogleSimulation'
+	config.simulation_description = 'simulation'
 end
 
 desc 'Committing and Pushing to Git :)'
