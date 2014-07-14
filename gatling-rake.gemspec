@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name        = 'gatling-rake'
-  spec.version     = '1.0.1'
+  spec.version     = '1.0.2'
   spec.summary     = 'Rake task for running gatling load tests'
   spec.authors     = ["iainjmitchell"]
   spec.email       = 'iainjmitchell@gmail.com'
