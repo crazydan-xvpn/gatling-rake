@@ -5,7 +5,7 @@ require_relative '../lib/src/Gatling'
 class RunGatlingTests < Test::Unit::TestCase	
 	include RakeGatling
 	private 
-	attr_reader :commands, :directory_removed
+	attr_reader :commands, :directory_removed, :moved_location
 
 	public 
 	def test_that_previous_results_directory_is_removed
@@ -80,12 +80,25 @@ class RunGatlingTests < Test::Unit::TestCase
 		gatling_command.should match(/ -sd "#{simulation_description}"/)
 	end
 
+	def test_that_results_directory_is_moved_up_to_results_root
+		@moved_location = nil
+		@commands = []
+		results_directory = "Random/#{rand(6)}"
+		mockShell = self
+		Gatling.new(mockShell).start(results_directory: results_directory)
+		@moved_location.should eql(results_directory)
+	end
+
 	def execute(command)
 		@commands.push(command)
 	end
 
 	def remove_directory(directory_name)
 		@directory_removed = directory_name
+	end
+
+	def move_directory_contents_up(location)
+		@moved_location = location
 	end
 end
 

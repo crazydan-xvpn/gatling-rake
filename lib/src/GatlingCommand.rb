@@ -1,11 +1,10 @@
-require_relative 'ShellCommand'
 require_relative 'GatlingParameterBuilder'
 
 module RakeGatling
 	module Commands
-		class GatlingCommand < ShellCommand	
+		class GatlingCommand
 			def initialize(shell)
-				super
+				@shell = shell
 				@parameter_builder = GatlingParameterBuilder.new
 			end
 
