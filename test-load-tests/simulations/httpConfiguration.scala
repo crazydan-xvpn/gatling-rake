@@ -8,7 +8,7 @@ import scala.concurrent.duration._
 object HttpConfiguration {
 
 	val httpConfig = http
-						.baseURL("http://www.google.com")
+						.baseURL("http://meatlust.com/bob")
 						.inferHtmlResources()
 						.acceptHeader("""text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8""")
 						.acceptEncodingHeader("""gzip, deflate""")

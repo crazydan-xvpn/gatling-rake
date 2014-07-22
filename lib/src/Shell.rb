@@ -11,10 +11,10 @@ module RakeGatling
 		def move_directory_contents_up(location)
 			directories = Dir.glob("#{location}/*")
 			Dir.glob("#{location}/*/*") {
-				|f| mv File.expand_path(f), location
+				|folder_object| mv File.expand_path(folder_object), location
 			}
-			directories.each do | f |
-				rm_rf File.expand_path(f)
+			directories.each do | directory |
+				rm_rf File.expand_path(directory)
 			end
 		end
 	end
