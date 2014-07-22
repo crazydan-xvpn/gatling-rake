@@ -1,5 +1,6 @@
 require_relative './src/Gatling'
 require_relative './src/Shell'
+require_relative './src/ResultsRepository'
 include Rake::DSL
 
 def gatling(*args, &block)
@@ -19,6 +20,7 @@ class GatlingWrapper
 	def run()			
 		configuration = GatlingConfiguration.new
 		@block.call(configuration)
+		results_repository = ResultsRepository.new(configuration.results_directory)
 		Gatling.new(@shell).start(
 			results_directory: configuration.results_directory,
 			gatling_file_location: configuration.gatling_file_location,
@@ -26,6 +28,7 @@ class GatlingWrapper
 			simulation: configuration.simulation,
 			simulation_description: configuration.simulation_description
 		)
+		puts results_repository.get
 	end
 end
 
