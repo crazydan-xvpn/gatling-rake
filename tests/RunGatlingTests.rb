@@ -13,7 +13,7 @@ class RunGatlingTests < Test::Unit::TestCase
 		@commands = []
 		results_directory = "Random/#{rand(6)}"
 		mockShell = self
-		Gatling.new(mockShell).start(results_directory: results_directory)
+		Gatling.new(mockShell, FakeResultsRepository.new).start(results_directory: results_directory)
 		@directory_removed.should eql(results_directory)
 	end
 
@@ -21,7 +21,7 @@ class RunGatlingTests < Test::Unit::TestCase
 		@commands = []
 		gatling_file_location = "aPlace/#{rand(4)}/gatling.bat"
 		mockShell = self
-		Gatling.new(mockShell).start(gatling_file_location: gatling_file_location)
+		Gatling.new(mockShell, FakeResultsRepository.new).start(gatling_file_location: gatling_file_location)
 		gatling_command = commands[0]
 		gatling_command.should match(/^#{gatling_file_location}/)
 	end
@@ -30,7 +30,7 @@ class RunGatlingTests < Test::Unit::TestCase
 		@commands = []
 		load_test_root = "aPlace/#{rand(4)}/"
 		mockShell = self
-		Gatling.new(mockShell).start(load_test_root: load_test_root)
+		Gatling.new(mockShell, FakeResultsRepository.new).start(load_test_root: load_test_root)
 		gatling_command = commands[0]
 		gatling_command.should match(/ -bf #{load_test_root}\/request-bodies/)
 	end
@@ -39,7 +39,7 @@ class RunGatlingTests < Test::Unit::TestCase
 		@commands = []
 		load_test_root = "aPlace/#{rand(4)}/"
 		mockShell = self
-		Gatling.new(mockShell).start(load_test_root: load_test_root)
+		Gatling.new(mockShell, FakeResultsRepository.new).start(load_test_root: load_test_root)
 		gatling_command = commands[0]
 		gatling_command.should match(/ -sf #{load_test_root}\/simulations/)
 	end
@@ -48,7 +48,7 @@ class RunGatlingTests < Test::Unit::TestCase
 		@commands = []
 		load_test_root = "aPlace/#{rand(4)}/"
 		mockShell = self
-		Gatling.new(mockShell).start(load_test_root: load_test_root)
+		Gatling.new(mockShell, FakeResultsRepository.new).start(load_test_root: load_test_root)
 		gatling_command = commands[0]
 		gatling_command.should match(/ -df #{load_test_root}\/data/)
 	end
@@ -57,7 +57,7 @@ class RunGatlingTests < Test::Unit::TestCase
 		@commands = []
 		results_directory = "Random/#{rand(6)}"
 		mockShell = self
-		Gatling.new(mockShell).start(results_directory: results_directory)
+		Gatling.new(mockShell, FakeResultsRepository.new).start(results_directory: results_directory)
 		gatling_command = commands[0]
 		gatling_command.should match(/ -rf #{results_directory}/)
 	end
@@ -66,7 +66,7 @@ class RunGatlingTests < Test::Unit::TestCase
 		@commands = []
 		simulation = "ARandom.#{rand(6)}.simulation"
 		mockShell = self
-		Gatling.new(mockShell).start(simulation: simulation)
+		Gatling.new(mockShell, FakeResultsRepository.new).start(simulation: simulation)
 		gatling_command = commands[0]
 		gatling_command.should match(/ -s #{simulation}/)
 	end
@@ -75,7 +75,7 @@ class RunGatlingTests < Test::Unit::TestCase
 		@commands = []
 		simulation_description = "#{rand(6)}simulation"
 		mockShell = self
-		Gatling.new(mockShell).start(simulation_description: simulation_description)
+		Gatling.new(mockShell, FakeResultsRepository.new).start(simulation_description: simulation_description)
 		gatling_command = commands[0]
 		gatling_command.should match(/ -sd "#{simulation_description}"/)
 	end
@@ -85,8 +85,50 @@ class RunGatlingTests < Test::Unit::TestCase
 		@commands = []
 		results_directory = "Random/#{rand(6)}"
 		mockShell = self
-		Gatling.new(mockShell).start(results_directory: results_directory)
+		Gatling.new(mockShell, FakeResultsRepository.new).start(results_directory: results_directory)
 		@moved_location.should eql(results_directory)
+	end
+
+	def test_that_when_results_contain_kos_then_error_is_thrown
+		@commands = []
+		mockShell = self
+		error_results = {
+			"name" => "Global Information",
+			"numberOfRequests" => {"total"=>50, "ok"=>49, "ko"=>1},
+			"minResponseTime" => {"total"=>56,"ok"=>56, "ko"=>0}
+		}
+		results_repository = FakeResultsRepository.new
+		results_repository.set(error_results)
+		gatling = Gatling.new(mockShell, results_repository)
+		expect{gatling.start(results_directory: "aDir")}.to raise_error("Gatling results contain one or more KOs")
+	end
+
+	def test_that_when_results_do_not_contain_kos_then_error_is_not_thrown
+		@commands = []
+		mockShell = self
+		error_results = {
+			"name" => "Global Information",
+			"numberOfRequests" => {"total"=>50, "ok"=>50, "ko"=>0},
+			"minResponseTime" => {"total"=>56,"ok"=>56, "ko"=>0}
+		}
+		results_repository = FakeResultsRepository.new
+		results_repository.set(error_results)
+		gatling = Gatling.new(mockShell, results_repository)
+		expect{gatling.start(results_directory: "aDir")}.to_not raise_error
+	end
+
+	def test_that_when_results_contain_minRepsonseTime_kos_then_error_is_thrown
+		@commands = []
+		mockShell = self
+		error_results = {
+			"name" => "Global Information",
+			"numberOfRequests" => {"total"=>50, "ok"=>50, "ko"=>0},
+			"minResponseTime" => {"total"=>56,"ok"=>55, "ko"=>1}
+		}
+		results_repository = FakeResultsRepository.new
+		results_repository.set(error_results)
+		gatling = Gatling.new(mockShell, results_repository)
+		expect{gatling.start(results_directory: "aDir")}.to raise_error("Gatling results contain one or more KOs")
 	end
 
 	def execute(command)
@@ -101,4 +143,19 @@ class RunGatlingTests < Test::Unit::TestCase
 		@moved_location = location
 	end
 end
+
+class FakeResultsRepository
+	def initialize 
+		@results = Hash.new
+	end
+
+	def get
+		@results
+	end
+
+	def set(results)
+		@results = results
+	end
+end
+
 

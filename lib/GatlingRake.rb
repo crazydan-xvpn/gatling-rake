@@ -21,14 +21,13 @@ class GatlingWrapper
 		configuration = GatlingConfiguration.new
 		@block.call(configuration)
 		results_repository = ResultsRepository.new(configuration.results_directory)
-		Gatling.new(@shell).start(
+		Gatling.new(@shell, results_repository).start(
 			results_directory: configuration.results_directory,
 			gatling_file_location: configuration.gatling_file_location,
 			load_test_root: configuration.load_test_root,
 			simulation: configuration.simulation,
 			simulation_description: configuration.simulation_description
 		)
-		puts results_repository.get
 	end
 end
 
