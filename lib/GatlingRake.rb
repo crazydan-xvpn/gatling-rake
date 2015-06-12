@@ -25,8 +25,7 @@ class GatlingWrapper
 			results_directory: configuration.results_directory,
 			gatling_file_location: configuration.gatling_file_location,
 			load_test_root: configuration.load_test_root,
-			simulation: configuration.simulation,
-			simulation_description: configuration.simulation_description
+			simulation: configuration.simulation
 		)
 	end
 end
@@ -35,6 +34,5 @@ class GatlingConfiguration
 	attr_accessor 	:results_directory,
 					:gatling_file_location,
 					:load_test_root,
-					:simulation,
-					:simulation_description
+					:simulation
 end

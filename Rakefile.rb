@@ -25,7 +25,6 @@ gatling :integration do | config |
 	config.gatling_file_location = '../../gatling/bin/gatling.sh'
 	config.load_test_root = './test-load-tests'
 	config.simulation = 'Test.GetGoogleSimulation'
-	config.simulation_description = 'simulation'
 end
 
 desc 'Committing and Pushing to Git :)'

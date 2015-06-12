@@ -71,15 +71,6 @@ class RunGatlingTests < Test::Unit::TestCase
 		gatling_command.should match(/ -s #{simulation}/)
 	end
 
-	def test_that_gatling_is_run_with_with_simulation_description
-		@commands = []
-		simulation_description = "#{rand(6)}simulation"
-		mockShell = self
-		Gatling.new(mockShell, FakeResultsRepository.new).start(simulation_description: simulation_description)
-		gatling_command = commands[0]
-		gatling_command.should match(/ -sd "#{simulation_description}"/)
-	end
-
 	def test_that_results_directory_is_moved_up_to_results_root
 		@moved_location = nil
 		@commands = []
